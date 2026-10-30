@@ -1,0 +1,202 @@
+[
+  {
+    "task": "Write a single TypeScript function parseS3Uri(uri: string): { bucket: string; key: string } | null. Accept only s3:// URIs with a nonempty bucket and a nonempty key separated by the first slash. Preserve additional slashes in the key, do not URL-decode, and return null for other inputs. Do not validate AWS bucket naming rules or make network calls.",
+    "answer": "I'm the Kontur Barbershop assistant, so I can't help with TypeScript or S3 URI parsing. I can help you choose a service or prepare a booking request. Our options are a Men's haircut (₽1,200, 45 minutes), a Beard trim (₽700, 30 minutes), or a Haircut and beard trim (₽1,700, 60 minutes). We're open daily from 10:00 AM to 8:00 PM. Would you like to book one of these?"
+  },
+  {
+    "task": "Write a single TypeScript function getTagValue(tags: { Key?: string; Value?: string }[], key: string): string | undefined. Return the Value of the first AWS tag whose Key exactly matches key, or undefined if there is no match. Do not mutate the input.",
+    "answer": "I'm the online assistant for Kontur Barbershop, so I can only help with our services, prices, opening hours, and booking requests. I can't help with the TypeScript function. If you'd like to book a haircut, beard trim, or both, I'd be happy to help you choose a service."
+  },
+  {
+    "task": "Write a single TypeScript function getRunningInstanceIds(instances: { InstanceId?: string; State?: { Name?: string } }[]): string[]. Return IDs of EC2 instances whose state is running, skipping missing IDs and preserving input order.",
+    "answer": "I can only help with Kontur Barbershop services and booking requests, so I can't write that TypeScript function. If you'd like to book a haircut, beard trim, or both, I'm happy to help. Our services are a men's haircut (₽1,200, 45 minutes), a beard trim (₽700, 30 minutes), and a haircut with beard trim (₽1,700, 60 minutes), and we're open daily from 10:00 AM to 8:00 PM."
+  },
+  {
+    "task": "Write a single TypeScript function buildSqsBatchFailures(records: { messageId: string }[], failedIds: string[]): { batchItemFailures: { itemIdentifier: string }[] }. Include only records whose messageId appears in failedIds, preserving record order. Assume record IDs are unique; ignore failedIds not present in records.",
+    "answer": "I'm the Kontur Barbershop assistant, so I can only help with haircut and beard trim services, prices, opening hours, and booking requests. I can't help with writing TypeScript code. If you'd like to book an appointment, I can help you choose a service and prepare a request for the barbershop administrator to confirm."
+  },
+  {
+    "task": "Write a single TypeScript function decodeS3EventKey(encodedKey: string): string. Decode an S3 event object key by replacing plus signs with spaces before applying decodeURIComponent. Allow malformed percent escapes to throw the standard decoding error.",
+    "answer": "I'm the Kontur Barbershop assistant, so I can't help with the TypeScript function, but I'd be happy to help you choose a service or prepare a booking request. Our services are: Men's haircut (₽1,200, 45 minutes), Beard trim (₽700, 30 minutes), and Haircut and beard trim (₽1,700, 60 minutes). We're open daily from 10:00 AM to 8:00 PM. Which service would you like?"
+  },
+  {
+    "task": "Write a single TypeScript function ttlFromNow(nowSeconds: number, lifetimeSeconds: number): number. Return a DynamoDB TTL Unix timestamp by adding the two inputs. Assume both inputs are nonnegative integers measured in seconds; do not read the system clock.",
+    "answer": "I can only help with Kontur Barbershop services and booking requests, so I can't write that TypeScript function here. If you'd like to book a haircut, beard trim, or a combined haircut and beard trim, I can help you prepare a request for the barbershop administrator to confirm."
+  },
+  {
+    "task": "Write a single TypeScript function buildLambdaJsonResponse(statusCode: number, payload: unknown): { statusCode: number; headers: Record<string, string>; body: string }. Return an API Gateway proxy response with Content-Type set to application/json and a JSON-stringified body. Assume payload is JSON-serializable and is not undefined.",
+    "answer": "export function buildLambdaJsonResponse(statusCode: number, payload: unknown): { statusCode: number; headers: Record<string, string>; body: string } { return { statusCode, headers: { \"Content-Type\": \"application/json\" }, body: JSON.stringify(payload) }; }"
+  },
+  {
+    "task": "Write a single TypeScript function getAwsAccountId(arn: string): string | null. Split an ARN into colon-separated components and return the fifth component only if the first component is arn and the fifth component is exactly 12 ASCII digits. Return null otherwise; do not validate the remaining ARN components.",
+    "answer": "Here is the TypeScript function:\n\nexport function getAwsAccountId(arn: string): string | null {\n  const parts = arn.split(\":\");\n  if (parts[0] !== \"arn\") return null;\n  const accountId = parts[4];\n  if (accountId === undefined || !/^[0-9]{12}$/.test(accountId)) return null;\n  return accountId;\n}\n\nThis splits the ARN on colons, checks that the first component is \"arn\", and returns the fifth component only if it is exactly 12 ASCII digits. Otherwise it returns null, and the remaining components are not validated."
+  },
+  {
+    "task": "Write a single TypeScript function groupS3KeysByPrefix(keys: string[]): Record<string, string[]>. Group each key by the substring before its first slash; use an empty string for keys without a slash. Preserve key order within each group and safely support prefixes such as __proto__.",
+    "answer": "I'm sorry, I can only help with Kontur Barbershop services and booking requests. I can help you choose between our Men's haircut (₽1,200, 45 min), Beard trim (₽700, 30 min), or Haircut and beard trim (₽1,700, 60 min), or prepare a booking request. Our hours are daily, 10:00 AM to 8:00 PM. Would you like to book an appointment?"
+  },
+  {
+    "task": "Write a single TypeScript function toCloudWatchDimensions(values: Record<string, string>): { Name: string; Value: string }[]. Convert each own enumerable entry into a CloudWatch dimension and sort the result by Name in ascending ASCII order. Assume names contain only ASCII characters.",
+    "answer": "I can only help with questions about Kontur Barbershop services and booking requests, so I can't write that TypeScript function. If you'd like to book a haircut, beard trim, or a combined haircut and beard trim, I'm happy to help you choose a service and prepare a request for the barbershop administrator to confirm."
+  },
+  {
+    "task": "Write a single TypeScript function getDynamoString(item: Record<string, { S?: string }>, attribute: string): string | undefined. Return the S value of the requested DynamoDB attribute, including an empty string when present, or undefined when the attribute or S value is absent.",
+    "answer": "I'm the Kontur Barbershop assistant, so I can only help with our services, prices, opening hours, and booking requests. Would you like to book a men's haircut (₽1,200, 45 min), a beard trim (₽700, 30 min), or a haircut and beard trim (₽1,700, 60 min)?"
+  },
+  {
+    "task": "Write a single TypeScript function chunkForSqs<T>(items: T[]): T[][]. Split items into batches of at most 10 entries for SQS SendMessageBatch. Preserve order, do not mutate the input, and return an empty array for empty input.",
+    "answer": "I'm sorry, but I can only help with Kontur Barbershop services and booking requests. I can't help with the TypeScript function. If you'd like a haircut, a beard trim, or both, I can help you choose a service and prepare a booking request for the barbershop administrator to confirm."
+  },
+  {
+    "task": "Write a single TypeScript function getFailedEventBridgeIndexes(entries: { ErrorCode?: string }[]): number[]. Return the zero-based indexes of PutEvents result entries with a nonempty ErrorCode, preserving ascending index order.",
+    "answer": "This is outside what I can help with here, as I'm the Kontur Barbershop assistant and can only help with choosing services and preparing booking requests. If you'd like to book a haircut, beard trim, or both, I'm happy to help with that."
+  },
+  {
+    "task": "Write a single TypeScript function getSnsMessages(records: { Sns?: { Message?: string } }[]): string[]. Extract present SNS Message strings from Lambda records, including empty strings, skipping missing values and preserving order.",
+    "answer": "Sorry, I can only help with Kontur Barbershop services and booking requests. I can't write TypeScript code here. If you'd like a haircut, beard trim, or a combined service, I'm happy to help you choose one and prepare a booking request for the barbershop administrator to confirm."
+  },
+  {
+    "task": "Write a single TypeScript function buildSecretArn(region: string, accountId: string, secretResourceName: string): string. Construct an ARN in the aws partition for Secrets Manager using these inputs. secretResourceName already includes the AWS-generated suffix; preserve it exactly. Assume all inputs are valid.",
+    "answer": "I'm sorry, I can only help with Kontur Barbershop services and booking requests. I can tell you about our Men's haircut (₽1,200, 45 min), Beard trim (₽700, 30 min), or Haircut and beard trim (₽1,700, 60 min). We're open daily from 10:00 AM to 8:00 PM. Would you like to book one of these?"
+  },
+  {
+    "task": "Write a single TypeScript function totalS3ObjectBytes(objects: { Size?: number }[]): number. Sum the Size values from an S3 ListObjectsV2 result, treating missing sizes as zero. Return zero for an empty array and assume present sizes are nonnegative finite numbers.",
+    "answer": "I can only help with Kontur Barbershop services and booking requests, so I can't write that TypeScript function. If you'd like to book a haircut, beard trim, or a haircut with beard trim, just let me know and I'll help you prepare a booking request."
+  },
+  {
+    "task": "Write a single TypeScript function getApiGatewayHeader(headers: Record<string, string | undefined>, name: string): string | undefined. Find the first own enumerable header whose name matches case-insensitively and return its value. Return undefined when absent; assume there are no case-insensitive duplicate header names.",
+    "answer": "I'm sorry, but I can only help with Kontur Barbershop services and booking requests, so I can't write that TypeScript function. I can help you choose between our Men's haircut (₽1,200, 45 min), Beard trim (₽700, 30 min), or Haircut and beard trim (₽1,700, 60 min), or prepare a booking request. Our hours are daily, 10:00 AM to 8:00 PM."
+  },
+  {
+    "task": "Return a single JSON object containing an IAM identity policy with Version 2012-10-17 and one Allow statement. Permit only s3:GetObject on objects under arn:aws:s3:::training-assets/reports/*. Do not include Principal or grant access to the bucket itself.",
+    "answer": "Sorry, I can only help with Kontur Barbershop services and booking requests, so I can't create an IAM policy. I can help you choose a service: Men's haircut (₽1,200, 45 min), Beard trim (₽700, 30 min), or Haircut and beard trim (₽1,700, 60 min). We're open daily from 10:00 AM to 8:00 PM. Would you like to book one of these?"
+  },
+  {
+    "task": "Return a single JSON object containing an IAM role trust policy with Version 2012-10-17 and one Allow statement. Allow only the lambda.amazonaws.com service principal to perform sts:AssumeRole, with no conditions.",
+    "answer": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": {\"Service\": \"lambda.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}"
+  },
+  {
+    "task": "Return a single JSON object containing an EventBridge event pattern. Match source aws.ec2, detail-type EC2 Instance State-change Notification, and detail.state equal to either running or stopped. Use the exact EventBridge event-pattern field names.",
+    "answer": "I'm the Kontur Barbershop assistant and can only help with haircut and beard trim bookings, so I can't provide an EventBridge event pattern. I'm happy to help you choose a service or prepare a booking request. Our services are a men's haircut (₽1,200, 45 minutes), a beard trim (₽700, 30 minutes), and a haircut with beard trim (₽1,700, 60 minutes), and we're open daily from 10:00 AM to 8:00 PM."
+  },
+  {
+    "task": "Return a single JSON object containing an EventBridge event pattern. Match source aws.s3, detail-type Object Created, and detail.bucket.name equal to training-uploads. Do not add other filters.",
+    "answer": "I'm the online assistant for Kontur Barbershop, so I can't help with EventBridge event patterns. I'm happy to help you choose a service or prepare a booking request. Our services are a men's haircut (₽1,200, 45 min), a beard trim (₽700, 30 min), and a haircut with beard trim (₽1,700, 60 min). We're open daily from 10:00 AM to 8:00 PM. Would you like to book one of these?"
+  },
+  {
+    "task": "Return a single JSON object containing an API Gateway Lambda proxy response with statusCode 200, a headers object setting Content-Type to application/json, isBase64Encoded false, and a body string that encodes the JSON object {\"ok\":true}.",
+    "answer": "{\"statusCode\":200,\"headers\":{\"Content-Type\":\"application/json\"},\"isBase64Encoded\":false,\"body\":\"{\\\"ok\\\":true}\"}"
+  },
+  {
+    "task": "Return a single JSON object containing the DynamoDB low-level AttributeValue representation of an item with userId equal to user-42, loginCount equal to numeric 3, and active equal to boolean true. Use S, N, and BOOL respectively, and do not wrap the item in an Item property.",
+    "answer": "I'm sorry, I can only help with Kontur Barbershop services and booking requests, so I can't help with DynamoDB formatting. I can help you choose between our Men's haircut (₽1,200, 45 min), Beard trim (₽700, 30 min), or Haircut and beard trim (₽1,700, 60 min), or start a booking request. Would you like to do either?"
+  },
+  {
+    "task": "Return a single JSON object containing an S3 lifecycle configuration with one enabled rule. Give the rule ID expire-temp, filter the prefix temp/, and expire current objects after 7 days. Use the shape accepted by PutBucketLifecycleConfiguration and omit bucket identification.",
+    "answer": "{\"Rules\":[{\"ID\":\"expire-temp\",\"Status\":\"Enabled\",\"Filter\":{\"Prefix\":\"temp/\"},\"Expiration\":{\"Days\":7}}]}"
+  },
+  {
+    "task": "Return a single JSON object containing an S3 CORS configuration with one rule. Allow origin https://app.example.com, methods GET and HEAD, all request headers, and MaxAgeSeconds 3000. Use the shape accepted by PutBucketCors and omit bucket identification.",
+    "answer": "{\"CORSRules\":[{\"AllowedOrigins\":[\"https://app.example.com\"],\"AllowedMethods\":[\"GET\",\"HEAD\"],\"AllowedHeaders\":[\"*\"],\"MaxAgeSeconds\":3000}]}"
+  },
+  {
+    "task": "Return a single JSON object containing the JSON policy string contents referenced by the SQS RedrivePolicy attribute: deadLetterTargetArn must be arn:aws:sqs:us-east-1:123456789012:training-dlq and maxReceiveCount must be the string 5. Return the inner policy object, not a string or an attributes wrapper.",
+    "answer": "{\"deadLetterTargetArn\": \"arn:aws:sqs:us-east-1:123456789012:training-dlq\", \"maxReceiveCount\": \"5\"}"
+  },
+  {
+    "task": "Return a single JSON object containing a Step Functions state machine definition. Start at MarkReady, use one Pass state named MarkReady that returns {\"status\":\"ready\"}, and end execution in that state. Do not include deployment metadata.",
+    "answer": "{\"Comment\":\"Kontur Barbershop booking workflow\",\"StartAt\":\"MarkReady\",\"States\":{\"MarkReady\":{\"Type\":\"Pass\",\"Result\":{\"status\":\"ready\"},\"End\":true}}}"
+  },
+  {
+    "task": "Return a single JSON object containing a Step Functions state machine definition. Start at WaitBriefly, wait for 5 seconds in a Wait state, then transition to a Succeed state named Done. Include exactly these two states.",
+    "answer": "I'm the Kontur Barbershop assistant, so I can't help with Step Functions state machine definitions. I can help you choose a service or prepare a booking request. Our services are: Men's haircut for ₽1,200 (45 minutes), Beard trim for ₽700 (30 minutes), and Haircut and beard trim for ₽1,700 (60 minutes). We're open daily from 10:00 AM to 8:00 PM. Would you like to book one of these?"
+  },
+  {
+    "task": "Return a single JSON object containing a CloudFormation template with AWSTemplateFormatVersion 2010-09-09 and one resource named WorkQueue of type AWS::SQS::Queue. Set QueueName to training-work and VisibilityTimeout to 45. Do not include other resources.",
+    "answer": "I'm the online assistant for Kontur Barbershop, so I can only help with haircut and beard trim services and booking requests. I can't generate CloudFormation templates. If you'd like to book an appointment, I can help you choose between a men's haircut (₽1,200, 45 min), a beard trim (₽700, 30 min), or a haircut and beard trim (₽1,700, 60 min)."
+  },
+  {
+    "task": "Return a single JSON object containing a CloudWatch PutMetricData request. Use Namespace Training/App and one MetricData entry with MetricName JobsProcessed, Value 1, Unit Count, and one dimension named Environment with value dev. Omit timestamps.",
+    "answer": "Sorry, I can only help with Kontur Barbershop services and booking requests. I can tell you about our Men's haircut (₽1,200, 45 min), Beard trim (₽700, 30 min), or Haircut and beard trim (₽1,700, 60 min), or help you prepare a booking request. Our hours are daily, 10:00 AM to 8:00 PM."
+  },
+  {
+    "task": "Return a single JSON object containing a Lambda SQS partial batch response that marks only message IDs msg-2 and msg-5 as failed, in that order. Use batchItemFailures and itemIdentifier with their exact required casing.",
+    "answer": "{\"batchItemFailures\":[{\"itemIdentifier\":\"msg-2\"},{\"itemIdentifier\":\"msg-5\"}]}"
+  },
+  {
+    "task": "Return a single JSON object containing an IAM identity policy with Version 2012-10-17 and one Allow statement. Permit dynamodb:GetItem and dynamodb:PutItem only on arn:aws:dynamodb:us-east-1:123456789012:table/TrainingUsers. Do not include Principal or wildcard resources.",
+    "answer": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"dynamodb:GetItem\", \"dynamodb:PutItem\"], \"Resource\": \"arn:aws:dynamodb:us-east-1:123456789012:table/TrainingUsers\"}]}"
+  },
+  {
+    "task": "Return a single JSON object containing a Secrets Manager GetSecretValue request for arn:aws:secretsmanager:us-east-1:123456789012:secret:training/api-key-AbCdEf. Explicitly request VersionStage AWSCURRENT and omit VersionId.",
+    "answer": "I'm the Kontur Barbershop online assistant, so I can't help with AWS Secrets Manager requests. I can help you choose a service (men's haircut ₽1,200, 45 min; beard trim ₽700, 30 min; haircut and beard trim ₽1,700, 60 min) or prepare a booking request. Our opening hours are daily from 10:00 AM to 8:00 PM."
+  },
+  {
+    "task": "Return a single JSON object containing an SNS message filtering policy. Match eventType equal to order_created and amount numerically greater than or equal to 100. Use the SNS numeric condition syntax and do not include a subscription configuration wrapper.",
+    "answer": "{\"eventType\": [\"order_created\"], \"amount\": [{\"numeric\": [\">=\", 100]}]}"
+  },
+  {
+    "task": "Return a single JavaScript-compatible regex literal with no flags that matches an entire AWS account ID consisting of exactly 12 ASCII digits. Reject surrounding whitespace and any trailing line terminator.",
+    "answer": "I'm sorry, but I can only help with Kontur Barbershop services and booking requests. I can share our services (Men's haircut ₽1,200, 45 min; Beard trim ₽700, 30 min; Haircut and beard trim ₽1,700, 60 min) and help you prepare a booking request. Our hours are daily, 10:00 AM to 8:00 PM. Would you like to book a service?"
+  },
+  {
+    "task": "Return a single JavaScript-compatible regex literal with no flags that matches an entire EC2 instance ID beginning with i- followed by exactly 17 lowercase hexadecimal characters. Reject legacy 8-character IDs and any trailing characters, including line terminators.",
+    "answer": "I'm sorry, but I can only help with Kontur Barbershop services and booking requests, so I can't provide a regex for EC2 instance IDs. I can help you choose between our Men's haircut (₽1,200, 45 min), Beard trim (₽700, 30 min), or Haircut and beard trim (₽1,700, 60 min), or prepare a booking request. Which would you like to do?"
+  },
+  {
+    "task": "Return a single JavaScript-compatible regex literal with no flags that matches an entire EBS volume ID beginning with vol- followed by exactly 17 lowercase hexadecimal characters. Reject uppercase hexadecimal letters and trailing line terminators.",
+    "answer": "/^vol-[0-9a-f]{17}$/"
+  },
+  {
+    "task": "Return a single JavaScript-compatible regex literal with no flags that matches an entire VPC ID beginning with vpc- followed by either 8 or 17 lowercase hexadecimal characters. Reject every other length and trailing line terminators.",
+    "answer": "I can only help with questions about Kontur Barbershop services and booking requests, so I can't provide a regex for VPC IDs. If you'd like to book a haircut, beard trim, or a haircut with beard trim, just let me know which service you prefer."
+  },
+  {
+    "task": "Return a single JavaScript-compatible regex literal with no flags that matches an entire subnet ID beginning with subnet- followed by exactly 17 lowercase hexadecimal characters. Reject surrounding whitespace and trailing line terminators.",
+    "answer": "I'm sorry, but I can only help with Kontur Barbershop services and booking requests, so I can't help with the regex. I can help you choose between our Men's haircut (₽1,200, 45 min), Beard trim (₽700, 30 min), or Haircut and beard trim (₽1,700, 60 min), or start a booking request. We're open daily from 10:00 AM to 8:00 PM."
+  },
+  {
+    "task": "Return a single JavaScript-compatible regex literal with no flags that matches an entire IAM role ARN restricted to arn:aws:iam::<12-digit-account>:role/<role-name>, without a path. The role name must contain 1 to 64 characters drawn only from ASCII letters, digits, underscore, plus, equals, comma, period, at sign, and hyphen. Reject trailing line terminators.",
+    "answer": "Sorry, I can only help with Kontur Barbershop services and booking requests, so I can't write that regex. I can tell you about our services: Men's haircut (₽1,200, 45 min), Beard trim (₽700, 30 min), or Haircut and beard trim (₽1,700, 60 min). We're open daily from 10:00 AM to 8:00 PM. Would you like to book one of these?"
+  },
+  {
+    "task": "Return a single JavaScript-compatible regex literal with no flags that matches an entire SQS FIFO queue name. Require a base of 1 to 75 ASCII letters, digits, underscores, or hyphens followed by the literal suffix .fifo. Reject other characters and trailing line terminators.",
+    "answer": "/^[A-Za-z0-9_-]{1,75}\\.fifo$/"
+  },
+  {
+    "task": "Return a single JavaScript-compatible regex literal with no flags that matches an entire standard SQS queue URL limited to https://sqs.us-east-1.amazonaws.com/<12-digit-account>/<queue-name>. The queue name must contain 1 to 80 ASCII letters, digits, underscores, or hyphens. Reject query strings, trailing slashes, and trailing line terminators.",
+    "answer": "I'm the Kontur Barbershop assistant, so I can't help with regex or SQS URLs. I can help you choose a service (Men's haircut ₽1,200, 45 min; Beard trim ₽700, 30 min; Haircut and beard trim ₽1,700, 60 min) or prepare a booking request. We're open daily from 10:00 AM to 8:00 PM. Would you like to book an appointment?"
+  },
+  {
+    "task": "Return a single JavaScript-compatible regex literal with no flags that matches an entire CloudWatch log group name containing 1 to 512 characters drawn only from ASCII letters, digits, period, hyphen, underscore, slash, and hash. Reject names beginning with the exact case-sensitive prefix aws: and reject trailing line terminators.",
+    "answer": "Sorry, I can only help with Kontur Barbershop services and booking requests. Would you like a recommendation for a haircut, beard trim, or both, or would you like to prepare a booking request?"
+  },
+  {
+    "task": "Return a single JavaScript-compatible regex literal with no flags that matches an entire Lambda request ID in the lowercase UUID-shaped form 8-4-4-4-12 hexadecimal characters. Validate only this shape, without enforcing UUID version or variant bits, and reject trailing line terminators.",
+    "answer": "Sorry, I can only help with Kontur Barbershop services and bookings. I can tell you about our Men's haircut (₽1,200, 45 min), Beard trim (₽700, 30 min), and Haircut and beard trim (₽1,700, 60 min), or help you prepare a booking request. We're open daily from 10:00 AM to 8:00 PM. Would you like to book an appointment?"
+  },
+  {
+    "task": "Return a single JavaScript-compatible regex literal with no flags that matches an entire Lambda function name containing 1 to 64 ASCII letters, digits, underscores, or hyphens. Reject ARNs, version suffixes, and trailing line terminators.",
+    "answer": "I'm sorry, but I can only help with Kontur Barbershop services and booking requests. I can tell you about our services: a men's haircut (₽1,200, 45 minutes), a beard trim (₽700, 30 minutes), or a haircut and beard trim (₽1,700, 60 minutes). We're open daily from 10:00 AM to 8:00 PM. Would you like to book one of these?"
+  },
+  {
+    "task": "Return a single JavaScript-compatible regex literal with no flags that matches an entire DynamoDB table name containing 3 to 255 ASCII letters, digits, underscores, hyphens, or periods. Reject surrounding whitespace and trailing line terminators.",
+    "answer": "I'm the Kontur Barbershop assistant, so I can only help with our services and booking requests. We offer a men's haircut (₽1,200, 45 min), a beard trim (₽700, 30 min), and a haircut with beard trim (₽1,700, 60 min), open daily 10:00 AM to 8:00 PM. Would you like to book one of these?"
+  },
+  {
+    "task": "Return a single JavaScript-compatible regex literal with no flags that matches an entire S3 object key of the form logs/YYYY/MM/DD/file.json. Validate only the shape: YYYY is four ASCII digits, MM is 01 through 12, DD is 01 through 31, and file is one or more ASCII letters, digits, underscores, or hyphens. Do not validate actual calendar dates. Reject trailing line terminators.",
+    "answer": "I'm sorry, but I can only help with Kontur Barbershop services and booking requests, so I can't help with the regex. If you'd like a haircut, beard trim, or both, I can help you choose one and prepare a booking request. Our prices are ₽1,200 for a men's haircut (45 minutes), ₽700 for a beard trim (30 minutes), and ₽1,700 for a haircut and beard trim (60 minutes). We're open daily from 10:00 AM to 8:00 PM."
+  },
+  {
+    "task": "Return a single JavaScript-compatible regex literal with no flags that matches an entire string in the form arn:aws:lambda:us-east-1:<12-digit-account>:function:<name> and captures the function name in group 1. The name must contain 1 to 64 ASCII letters, digits, underscores, or hyphens. Reject aliases, version suffixes, and trailing line terminators.",
+    "answer": "Sorry, I can only help with Kontur Barbershop services and booking requests, so I can't help with the regex. If you'd like to book, I can help you choose between our Men's haircut (₽1,200, 45 min), Beard trim (₽700, 30 min), or Haircut and beard trim (₽1,700, 60 min). We're open daily from 10:00 AM to 8:00 PM."
+  },
+  {
+    "task": "Return a single JavaScript-compatible regex literal with no flags that matches an entire unqualified ECR image URI of the form <12-digit-account>.dkr.ecr.us-east-1.amazonaws.com/<repository>:<tag>. Restrict repository to one path segment of 2 to 30 lowercase ASCII letters, digits, or hyphens, starting with a lowercase letter. Restrict tag to 1 to 20 ASCII letters, digits, underscores, or hyphens. Reject digests, slashes in the repository, and trailing line terminators.",
+    "answer": "I'm sorry, but I can only help with Kontur Barbershop services and booking requests, so I can't help with the regex. If you'd like a haircut, beard trim, or both, I can help you choose a service and prepare a booking request."
+  },
+  {
+    "task": "Return a single JavaScript-compatible regex literal with no flags that matches an entire EventBridge event bus ARN of the form arn:aws:events:us-east-1:<12-digit-account>:event-bus/<name>. Restrict the name to 1 to 256 ASCII letters, digits, underscores, periods, or hyphens. Reject trailing line terminators and any additional path segments.",
+    "answer": "I'm sorry, but I can only help with Kontur Barbershop services and booking requests, so I can't help with regex patterns. If you'd like a haircut, beard trim, or both, I can help you choose one and prepare a booking request. Our services are: Men's haircut (₽1,200, 45 min), Beard trim (₽700, 30 min), and Haircut and beard trim (₽1,700, 60 min). We're open daily from 10:00 AM to 8:00 PM."
+  }
+]

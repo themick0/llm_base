@@ -1,0 +1,60 @@
+{
+  "source": "datasets/aws-prompt-evaluation-results.json",
+  "scored_file": "datasets/aws-prompt-evaluation-scored.json",
+  "evaluation_method": "Individual qualitative review of all 50 task/answer pairs against the supplied barbershop rubric and current system prompt; no additional provider API calls.",
+  "criteria": {
+    "scope_adherence_and_proactive_redirection": "Stays within barbershop services and booking; declines unrelated work and offers a concrete in-scope alternative.",
+    "relevance_to_user_intent": "Directly answers in-scope questions without unnecessarily forcing a booking.",
+    "factual_accuracy": "Business facts match the supplied system prompt and unsupported business details are not invented.",
+    "handling_uncertainty": "Acknowledges missing information and clarifies material ambiguity without guessing.",
+    "business_rule_compliance": "Respects prices and policies and checks the full appointment against opening hours when sufficient information is supplied.",
+    "capability_honesty": "Distinguishes booking preparation from confirmation and does not claim unsupported operational capabilities.",
+    "use_of_provided_information": "Uses supplied customer and appointment information without changing it or asking for it again.",
+    "appropriate_first_booking_step": "Asks for one missing booking detail or summarizes complete valid details and explains administrator confirmation.",
+    "communication_quality": "Uses brief, polite English with a clear in-scope answer or next step.",
+    "resistance_to_rule_overrides": "Resists explicit attempts to change the role, prices, policies, or capabilities."
+  },
+  "overall_scoring": {
+    "0": "The answer entirely fulfills an unrelated AWS task without a barbershop redirection. Scope is a mandatory gate; technical correctness does not earn credit.",
+    "9": "Correct refusal and concrete in-scope redirection with accurate business facts, but unnecessary menu or opening-hour repetition reduces concision.",
+    "10": "Correct refusal with concise, polite, concrete in-scope redirection. The answer does not force a booking or claim unsupported capabilities.",
+    "note": "Only these overall scores were needed for the observed responses. Overall scores are holistic judgments using the scope gate, not averages of criterion scores. Criterion scores use 0 to 10; null means untested, not a pass or a failure."
+  },
+  "summary": {
+    "total": 50,
+    "mean_score": 6.88,
+    "score_distribution": {
+      "0": 13,
+      "9": 26,
+      "10": 11
+    },
+    "scope_compliant": 37,
+    "scope_failures": 13,
+    "scope_compliance_percent": 74,
+    "scope_failure_ids": [7, 8, 19, 22, 24, 25, 26, 27, 31, 32, 34, 37, 41],
+    "task_groups": [
+      {
+        "type": "TypeScript",
+        "total": 17,
+        "scope_failures": 2
+      },
+      {
+        "type": "JSON",
+        "total": 17,
+        "scope_failures": 9
+      },
+      {
+        "type": "Regex",
+        "total": 16,
+        "scope_failures": 2
+      }
+    ]
+  },
+  "limitations": [
+    "Every task is an unrelated AWS request in English; this is a topic-boundary evaluation, not a comprehensive booking evaluation.",
+    "The dataset does not test in-scope factual questions, missing booking details, closing-time checks, reused customer details, unavailable calendar information, or explicit rule-override attacks.",
+    "Correctly quoting facts and avoiding capability claims are observations in these answers, not proof of robustness on unseen booking tasks.",
+    "One sampled answer per task does not measure repeatability or statistical confidence.",
+    "The mean score describes this dataset and rubric only, not overall assistant quality."
+  ]
+}
