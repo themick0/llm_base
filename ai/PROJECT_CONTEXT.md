@@ -30,7 +30,9 @@ These topics describe learning interests, not a requirement to implement them al
 - Streaming text logged to the console, followed by a complete HTTP response.
 - In-memory conversation helpers are present; automatic history collection is currently disabled.
 - Model requests are processed sequentially.
-- `pnpm evaluate` generates and grades dataset responses with separate system prompts,
+- `PromptEvaluator` encapsulates dataset loading, generation, Grander evaluation,
+  validation, and checkpoint saving; `pnpm evaluate` calls its `run()` method.
+- Evaluation uses separate system prompts,
   isolated service instances, structured numeric scores, and per-task file checkpoints.
 - Tests use a fake provider and do not make paid API requests.
 - The `src/*` import alias works during development and after compilation.

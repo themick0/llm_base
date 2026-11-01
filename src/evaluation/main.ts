@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { resolve } from 'node:path';
 import { loadConfig } from 'src/config';
-import { runEvaluation } from 'src/evaluation/run-evaluation';
+import { PromptEvaluator } from 'src/evaluation/PromptEvaluator';
 import {
   ANTHROPIC_MAX_RETRIES,
   ANTHROPIC_TIMEOUT_MS,
@@ -24,17 +24,19 @@ async function main() {
   });
   const logger = { info: () => undefined };
 
-  await runEvaluation({
+  const evaluator = new PromptEvaluator({
     datasetPath,
     outputPath,
     assistantSystemPrompt: SYSTEM_PROMPT,
     createServices: () => ({
       assistant: new LlmService(client, config.anthropicModel, logger),
-      judge: new LlmService(client, config.anthropicModel, logger),
+      grander: new LlmService(client, config.anthropicGranderModel, logger),
     }),
     onProgress: (completed, total) =>
       console.log(`Saved ${completed}/${total}`),
   });
+
+  await evaluator.run();
 
   console.log(`Evaluation completed: ${outputPath}`);
 }

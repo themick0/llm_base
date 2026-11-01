@@ -18,7 +18,8 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test test/*.test.ts",
-    "evaluate": "tsx src/evaluation/main.ts"
+    "evaluate": "tsx src/evaluation/main.ts",
+    "evaluate:average": "node scripts/average-score.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.3.0",

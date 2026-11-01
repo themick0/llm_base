@@ -14,13 +14,14 @@ pnpm dev
 
 Keep your existing `.env` if it is already configured. Process environment variables take precedence over `.env`.
 
-| Variable            | Default            | Purpose                            |
-| ------------------- | ------------------ | ---------------------------------- |
-| `NODE_ENV`          | `development`      | development, test, or production   |
-| `PORT`              | `3000`             | HTTP server port                   |
-| `API_PREFIX`        | `api`              | Route prefix                       |
-| `ANTHROPIC_API_KEY` | —                  | Required Anthropic API key         |
-| `ANTHROPIC_MODEL`   | `claude-haiku-5-5` | Model ID available to your account |
+| Variable                  | Default            | Purpose                                         |
+| ------------------------- | ------------------ | ----------------------------------------------- |
+| `NODE_ENV`                | `development`      | development, test, or production                |
+| `PORT`                    | `3000`             | HTTP server port                                |
+| `API_PREFIX`              | `api`              | Route prefix                                    |
+| `ANTHROPIC_API_KEY`       | —                  | Required Anthropic API key                      |
+| `ANTHROPIC_MODEL`         | `claude-haiku-5-5` | Model ID available to your account              |
+| `ANTHROPIC_GRANDER_MODEL` | `ANTHROPIC_MODEL`  | Model used by the Grander for prompt evaluation |
 
 The client is explicitly created once per application instance. The application requires an API key to start. Static parameters and the system prompt are defined in `src/llm/constants.ts`. The `src/*` import alias works during development and after compilation.
 
@@ -65,20 +66,36 @@ pnpm evaluate
 pnpm evaluate datasets/aws-prompt-evaluation.json datasets/my-evaluation.json
 ```
 
-The script calls `LlmService.generate` directly; no HTTP server is required.
-Each task first uses the barbershop system prompt, then a separate judge system
-prompt containing the ten evaluation criteria in `src/evaluation/judge-prompt.ts`.
-The judge receives the original system prompt, task, and response as data.
-Its structured output is validated as a numeric score from 0 to 10.
+The script creates `PromptEvaluator` from `src/evaluation/PromptEvaluator.ts` and calls
+its `run()` method. The class handles dataset loading, generation, Grander evaluation,
+validation, and checkpoint saving. It calls `LlmService.generate` directly; no HTTP
+server is required.
+Each task first uses the barbershop system prompt, then a separate Grander system
+prompt containing the ten evaluation criteria in `src/evaluation/grander-prompt.ts`.
+The Grander receives the original system prompt, task, and response as data.
+Its structured output is validated as `strengths` and `weaknesses` arrays with 1–3 nonempty items each, a nonempty `reasoning` string, and a numeric `score` from 1 to 10.
 
 Results are written to `datasets/aws-prompt-evaluation-auto-scored.json` as
-`[{ "task": "...", "response": "...", "score": 9 }]`. The assistant's `agentText`
-is extracted into `response`. Fresh service instances isolate every task and judge;
+`[{ "task": "...", "response": "...", "strengths": ["..."], "weaknesses": ["..."], "reasoning": "...", "score": 9 }]`. The assistant's `agentText`
+is extracted into `response`. Fresh service instances isolate every task and Grander;
 the underlying Anthropic client is reused. Results are saved atomically after
 each completed task. A new run replaces the selected output file. On failure,
 the script stops with a nonzero exit code and retains completed results.
 
 This runs real API requests: two per task, or 100 requests for the 50-task dataset.
-The same model from `ANTHROPIC_MODEL` is used for generation and grading.
+The assistant uses `ANTHROPIC_MODEL`. The Grander uses `ANTHROPIC_GRANDER_MODEL`,
+falling back to `ANTHROPIC_MODEL` when the variable is not set.
 Model-generated scores are estimates; this AWS dataset primarily measures scope
 adherence rather than the complete booking workflow.
+
+### Average evaluation score
+
+```bash
+pnpm evaluate:average
+pnpm evaluate:average datasets/aws-prompt-evaluation-scored.json
+```
+
+By default, the script reads `datasets/aws-prompt-evaluation-auto-scored.json`.
+It prints the file path, result count, and arithmetic mean as JSON. Zero scores
+are included. Empty arrays and missing, nonnumeric, or out-of-range scores cause
+a nonzero exit instead of silently skipping records.

@@ -154,6 +154,7 @@ for (const invalid of [
   { API_PREFIX: 'a/b' },
   { ANTHROPIC_API_KEY: ' ' },
   { ANTHROPIC_MODEL: '' },
+  { ANTHROPIC_GRANDER_MODEL: '   ' },
 ]) {
   test(`rejects invalid settings: ${Object.keys(invalid)[0]}`, () => {
     assert.throws(() =>

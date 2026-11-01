@@ -7,6 +7,7 @@ export interface Config {
   nodeEnv: 'development' | 'test' | 'production';
   anthropicApiKey: string;
   anthropicModel: string;
+  anthropicGranderModel: string;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -31,5 +32,18 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const anthropicModel = env.ANTHROPIC_MODEL ?? ANTHROPIC_DEFAULT_MODEL;
   if (!anthropicModel.trim())
     throw new Error('ANTHROPIC_MODEL must not be empty');
-  return { port, apiPrefix, nodeEnv, anthropicApiKey, anthropicModel };
+  const anthropicGranderModel = env.ANTHROPIC_GRANDER_MODEL ?? anthropicModel;
+
+  if (!anthropicGranderModel.trim()) {
+    throw new Error('ANTHROPIC_GRANDER_MODEL must not be empty');
+  }
+
+  return {
+    port,
+    apiPrefix,
+    nodeEnv,
+    anthropicApiKey,
+    anthropicModel,
+    anthropicGranderModel,
+  };
 }
