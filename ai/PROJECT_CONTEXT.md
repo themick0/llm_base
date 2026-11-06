@@ -28,7 +28,13 @@ These topics describe learning interests, not a requirement to implement them al
 - Anthropic SDK with one explicitly created client per application instance.
 - `GET /api/health` and `POST /api/llm/generate`; the prefix is configurable.
 - Streaming text logged to the console, followed by a complete HTTP response.
-- In-memory conversation helpers are present; automatic history collection is currently disabled.
+- Conversation history is stored in memory per service instance.
+- Full assistant content blocks are preserved in history after a successful turn.
+  `requestMessage()` returns the SDK message; `textFromMessage()` extracts text for the API response.
+- The assistant can call the strict `getCurrentTime` and `add_duration_to_datetime` tools, executed by `TimeService`.
+  Duration arithmetic accepts an ISO 8601 datetime with a timezone and a duration in minutes.
+  Tool results contain UTC timestamps; the Grander has no time tool.
+- `LlmService` uses the Anthropic SDK client type directly; tests mock its streaming method.
 - Model requests are processed sequentially.
 - `PromptEvaluator` encapsulates dataset loading, generation, Grander evaluation,
   validation, and checkpoint saving; `pnpm evaluate` calls its `run()` method.

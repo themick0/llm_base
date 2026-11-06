@@ -8,6 +8,11 @@ import {
   SYSTEM_PROMPT,
 } from 'src/llm/constants';
 import { LlmService } from 'src/llm/llm.service';
+import {
+  addDurationToDatetimeTool,
+  getCurrentTimeTool,
+} from 'src/time/anthropic.time.schema';
+import { TimeService } from 'src/time/time.service';
 
 async function main() {
   const config = loadConfig();
@@ -23,13 +28,20 @@ async function main() {
     maxRetries: ANTHROPIC_MAX_RETRIES,
   });
   const logger = { info: () => undefined };
+  const timeService = new TimeService();
 
   const evaluator = new PromptEvaluator({
     datasetPath,
     outputPath,
     assistantSystemPrompt: SYSTEM_PROMPT,
     createServices: () => ({
-      assistant: new LlmService(client, config.anthropicModel, logger),
+      assistant: new LlmService(
+        client,
+        config.anthropicModel,
+        logger,
+        timeService,
+        [getCurrentTimeTool, addDurationToDatetimeTool],
+      ),
       grander: new LlmService(client, config.anthropicGranderModel, logger),
     }),
     onProgress: (completed, total) =>

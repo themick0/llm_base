@@ -1,62 +1,39 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
-import type {
-  Message,
-  MessageCreateParamsNonStreaming,
-} from '@anthropic-ai/sdk/resources/messages';
+import { mock, test } from 'node:test';
+import Anthropic from '@anthropic-ai/sdk';
+import { MessageStream } from '@anthropic-ai/sdk/lib/MessageStream';
 import { createApp } from 'src/app';
 import { loadConfig } from 'src/config';
+import { parsedResponse } from './fixtures/anthropic';
 import { SYSTEM_PROMPT } from 'src/llm/constants';
-import type { LlmClient } from 'src/llm/llm.service';
-
-const response: Message = {
-  container: null,
-  diagnostics: null,
-  stop_details: null,
-  id: 'msg_test',
-  type: 'message',
-  role: 'assistant',
-  model: 'test-model',
-  content: [{ type: 'text', text: 'Hello', citations: null }],
-  stop_reason: 'end_turn',
-  stop_sequence: null,
-  usage: {
-    cache_creation: null,
-    inference_geo: null,
-    output_tokens_details: null,
-    server_tool_use: null,
-    service_tier: null,
-    speed: null,
-    input_tokens: 1,
-    output_tokens: 1,
-    cache_creation_input_tokens: null,
-    cache_read_input_tokens: null,
-  },
-};
 
 function setup() {
-  const calls: MessageCreateParamsNonStreaming[] = [];
+  const calls: Parameters<Anthropic['messages']['stream']>[0][] = [];
   let fail = false;
-  const client: LlmClient = {
-    messages: {
-      stream(params) {
-        calls.push(params);
-        return {
-          on(_event, listener) {
-            listener('Hello');
-          },
-          async finalMessage() {
-            await new Promise((resolve) => setTimeout(resolve, 1));
-            if (fail) {
-              fail = false;
-              throw new Error('secret provider error');
-            }
-            return response;
-          },
-        };
-      },
+  const client = new Anthropic({ apiKey: 'test-key' });
+
+  mock.method(
+    client.messages,
+    'stream',
+    (params: Parameters<Anthropic['messages']['stream']>[0]) => {
+      const stream = new MessageStream(null);
+
+      calls.push(params);
+
+      mock.method(stream, 'finalMessage', async () => {
+        await new Promise((resolve) => setTimeout(resolve, 1));
+
+        if (fail) {
+          fail = false;
+          throw new Error('secret provider error');
+        }
+
+        return parsedResponse;
+      });
+
+      return stream;
     },
-  };
+  );
   const config = loadConfig({
     ANTHROPIC_API_KEY: 'test-key',
     NODE_ENV: 'test',
@@ -87,14 +64,18 @@ test('health uses the configured prefix', async (t) => {
   assert.deepEqual(result.json(), { status: 'ok' });
 });
 
-test('returns response text and keeps requests independent', async (t) => {
+test('returns response text and includes conversation history', async (t) => {
   const { app, calls, send } = setup();
   t.after(() => app.close());
   const first = await send('First');
   assert.equal(first.statusCode, 200);
   assert.deepEqual(first.json(), { response: 'Hello' });
   await send('Second');
-  assert.deepEqual(calls[1].messages, [{ role: 'user', content: 'Second' }]);
+  assert.deepEqual(calls[1].messages, [
+    { role: 'user', content: 'First' },
+    { role: 'assistant', content: parsedResponse.content },
+    { role: 'user', content: 'Second' },
+  ]);
   assert.equal(calls[0].max_tokens, 1024);
   assert.equal(calls[0].system, SYSTEM_PROMPT);
   assert.equal(calls[0].stop_sequences, undefined);
@@ -136,13 +117,20 @@ test('failed requests do not enter history or block the next request', async (t)
   assert.deepEqual(calls[1].messages, [{ role: 'user', content: 'Retry' }]);
 });
 
-test('simultaneous requests keep separate user messages', async (t) => {
+test('simultaneous requests use sequential conversation history', async (t) => {
   const { app, calls, send } = setup();
   t.after(() => app.close());
   await Promise.all([send('One'), send('Two')]);
   assert.deepEqual(
     calls.map((call) => call.messages),
-    [[{ role: 'user', content: 'One' }], [{ role: 'user', content: 'Two' }]],
+    [
+      [{ role: 'user', content: 'One' }],
+      [
+        { role: 'user', content: 'One' },
+        { role: 'assistant', content: parsedResponse.content },
+        { role: 'user', content: 'Two' },
+      ],
+    ],
   );
 });
 

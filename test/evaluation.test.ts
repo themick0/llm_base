@@ -3,11 +3,14 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { test } from 'node:test';
+import { mock, test } from 'node:test';
+import Anthropic from '@anthropic-ai/sdk';
+import { MessageStream } from '@anthropic-ai/sdk/lib/MessageStream';
+import { parsedResponse } from './fixtures/anthropic';
 import { GRANDER_SYSTEM_PROMPT } from 'src/evaluation/grander-prompt';
 import { EvaluationSchema } from 'src/evaluation/evaluation.schema';
 import { PromptEvaluator } from 'src/evaluation/PromptEvaluator';
-import { LlmService, type LlmClient } from 'src/llm/llm.service';
+import { LlmService } from 'src/llm/llm.service';
 
 const evaluation = {
   strengths: ['Maintains the assigned role'],
@@ -160,42 +163,41 @@ test('does not overwrite the input dataset', async (t) => {
 
 test('generate sends the grander prompt and numeric score schema to Anthropic', async () => {
   let received = false;
-  const client: LlmClient = {
-    messages: {
-      stream(params) {
-        assert.equal(params.system, GRANDER_SYSTEM_PROMPT);
-        assert.equal(params.messages.at(-1)?.role, 'user');
-        assert.equal(params.output_config?.format?.type, 'json_schema');
+  const client = new Anthropic({ apiKey: 'test-key' });
 
-        const format = params.output_config?.format;
+  mock.method(
+    client.messages,
+    'stream',
+    (params: Parameters<Anthropic['messages']['stream']>[0]) => {
+      assert.equal(params.system, GRANDER_SYSTEM_PROMPT);
+      assert.equal(params.messages.at(-1)?.role, 'user');
+      assert.equal(params.output_config?.format?.type, 'json_schema');
 
-        if (format?.type === 'json_schema') {
-          assert.deepEqual(format.schema.required, [
-            'strengths',
-            'weaknesses',
-            'reasoning',
-            'score',
-          ]);
-        }
+      const format = params.output_config?.format;
 
-        received = true;
+      if (format?.type === 'json_schema') {
+        assert.deepEqual(format.schema.required, [
+          'strengths',
+          'weaknesses',
+          'reasoning',
+          'score',
+        ]);
+      }
 
-        return {
-          on() {},
-          async finalMessage() {
-            // Only the content property is consumed by generate.
-            return {
-              content: [{ type: 'text', text: JSON.stringify(evaluation) }],
-            } as Awaited<
-              ReturnType<
-                import('src/llm/llm.service').LlmStream['finalMessage']
-              >
-            >;
-          },
-        };
-      },
+      received = true;
+
+      const stream = new MessageStream(null);
+
+      mock.method(stream, 'finalMessage', async () => ({
+        ...parsedResponse,
+        content: [
+          { ...parsedResponse.content[0], text: JSON.stringify(evaluation) },
+        ],
+      }));
+
+      return stream;
     },
-  };
+  );
   const service = new LlmService(client, 'test-model', { info() {} });
   const result = await service.generate(
     'Evaluation input',

@@ -2,9 +2,14 @@ import Anthropic from '@anthropic-ai/sdk';
 import Fastify from 'fastify';
 import { loadConfig, type Config } from 'src/config';
 import { ANTHROPIC_MAX_RETRIES, ANTHROPIC_TIMEOUT_MS } from 'src/llm/constants';
-import { LlmService, type LlmClient } from 'src/llm/llm.service';
+import { LlmService } from 'src/llm/llm.service';
+import {
+  addDurationToDatetimeTool,
+  getCurrentTimeTool,
+} from 'src/time/anthropic.time.schema';
+import { TimeService } from 'src/time/time.service';
 
-export function createApp(config: Config = loadConfig(), client?: LlmClient) {
+export function createApp(config: Config = loadConfig(), client?: Anthropic) {
   const app = Fastify({
     logger: config.nodeEnv !== 'test',
     ajv: { customOptions: { coerceTypes: false, removeAdditional: false } },
@@ -18,7 +23,14 @@ export function createApp(config: Config = loadConfig(), client?: LlmClient) {
       maxRetries: ANTHROPIC_MAX_RETRIES,
     });
   }
-  const llm = new LlmService(anthropic, config.anthropicModel, app.log);
+  const timeService = new TimeService();
+  const llm = new LlmService(
+    anthropic,
+    config.anthropicModel,
+    app.log,
+    timeService,
+    [getCurrentTimeTool, addDurationToDatetimeTool],
+  );
   const prefix = `/${config.apiPrefix}`;
 
   app.get(`${prefix}/health`, async () => ({ status: 'ok' }));

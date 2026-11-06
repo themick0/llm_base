@@ -99,3 +99,19 @@ By default, the script reads `datasets/aws-prompt-evaluation-auto-scored.json`.
 It prints the file path, result count, and arithmetic mean as JSON. Zero scores
 are included. Empty arrays and missing, nonnumeric, or out-of-range scores cause
 a nonzero exit instead of silently skipping records.
+
+## Current-time tool
+
+`src/time/anthropic.time.schema.ts` exports `getCurrentTimeTool`, checked with the
+Anthropic SDK `Tool` type and configured with `strict: true`. Its input is an empty
+object. `TimeService.getCurrentTime()` returns the server time as an ISO 8601 UTC
+string.
+
+The assistant receives this tool in `tools`. When Anthropic returns `tool_use`,
+`LlmService` executes the local method, sends a `tool_result` with the matching
+`tool_use_id`, and requests the final response. The complete tool exchange is
+saved to history only after the turn succeeds. Unknown tools and invalid arguments
+produce error tool results. Tool rounds are limited by `MAX_TOOL_ROUNDS`.
+
+The Grander does not receive the time tool. The tool gives UTC time, not the
+barbershop local timezone or appointment availability.
