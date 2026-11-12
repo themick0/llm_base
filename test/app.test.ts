@@ -5,7 +5,7 @@ import { MessageStream } from '@anthropic-ai/sdk/lib/MessageStream';
 import { createApp } from 'src/app';
 import { loadConfig } from 'src/config';
 import { parsedResponse } from './fixtures/anthropic';
-import { SYSTEM_PROMPT } from 'src/llm/constants';
+import { barbershopSystemPrompt } from 'src/prompts/barbershop-prompts';
 
 function setup() {
   const calls: Parameters<Anthropic['messages']['stream']>[0][] = [];
@@ -77,8 +77,19 @@ test('returns response text and includes conversation history', async (t) => {
     { role: 'user', content: 'Second' },
   ]);
   assert.equal(calls[0].max_tokens, 1024);
-  assert.equal(calls[0].system, SYSTEM_PROMPT);
+  assert.equal(calls[0].system, barbershopSystemPrompt);
   assert.equal(calls[0].stop_sequences, undefined);
+  assert.equal(calls[0].output_config, undefined);
+  const search = calls[0].tools?.find(
+    (tool) => 'name' in tool && tool.name === 'web_search',
+  );
+  assert.ok(search && 'allowed_domains' in search);
+  assert.deepEqual(search.allowed_domains, ['wikipedia.org']);
+  assert.ok(
+    calls[0].tools?.some(
+      (tool) => 'name' in tool && tool.name === 'setReminder',
+    ),
+  );
 
   for (const call of calls) {
     assert.equal(call.messages.at(-1)?.role, 'user');
@@ -150,3 +161,15 @@ for (const invalid of [
     );
   });
 }
+
+test('serves the chat page with the configured API endpoint without calling the model', async (t) => {
+  const { app, calls } = setup();
+  t.after(() => app.close());
+
+  const result = await app.inject('/');
+
+  assert.equal(result.statusCode, 200);
+  assert.match(result.headers['content-type'] ?? '', /text\/html/);
+  assert.ok(result.body.includes('/custom/llm/generate'));
+  assert.equal(calls.length, 0);
+});

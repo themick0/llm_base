@@ -4,8 +4,6 @@ export const DatasetSchema = z
   .array(z.object({ task: z.string().min(1) }))
   .min(1);
 
-export const AnswerSchema = z.object({ agentText: z.string() }).strict();
-
 export const EvaluationSchema = z
   .object({
     strengths: z.array(z.string().min(1)).min(1).max(3),

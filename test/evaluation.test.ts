@@ -7,7 +7,7 @@ import { mock, test } from 'node:test';
 import Anthropic from '@anthropic-ai/sdk';
 import { MessageStream } from '@anthropic-ai/sdk/lib/MessageStream';
 import { parsedResponse } from './fixtures/anthropic';
-import { GRANDER_SYSTEM_PROMPT } from 'src/evaluation/grander-prompt';
+import { granderSystemPrompt } from 'src/prompts/grander-prompt';
 import { EvaluationSchema } from 'src/evaluation/evaluation.schema';
 import { PromptEvaluator } from 'src/evaluation/PromptEvaluator';
 import { LlmService } from 'src/llm/llm.service';
@@ -51,7 +51,7 @@ test('generates then grades every task and checkpoints the requested shape', asy
             calls.push(`assistant:${task}`);
 
             return {
-              response: JSON.stringify({ agentText: `Answer to ${task}` }),
+              response: `Answer to ${task}`,
             };
           },
         },
@@ -59,7 +59,7 @@ test('generates then grades every task and checkpoints the requested shape', asy
           async generate(input, prompt, schema) {
             const data = JSON.parse(input);
 
-            assert.equal(prompt, GRANDER_SYSTEM_PROMPT);
+            assert.equal(prompt, granderSystemPrompt);
             assert.equal(schema, EvaluationSchema);
             assert.equal(
               data.assistantSystemPrompt,
@@ -122,7 +122,7 @@ for (const invalid of [
           return {
             assistant: {
               async generate() {
-                return { response: '{"agentText":"Answer"}' };
+                return { response: 'Answer' };
               },
             },
             grander: {
@@ -169,7 +169,7 @@ test('generate sends the grander prompt and numeric score schema to Anthropic', 
     client.messages,
     'stream',
     (params: Parameters<Anthropic['messages']['stream']>[0]) => {
-      assert.equal(params.system, GRANDER_SYSTEM_PROMPT);
+      assert.equal(params.system, granderSystemPrompt);
       assert.equal(params.messages.at(-1)?.role, 'user');
       assert.equal(params.output_config?.format?.type, 'json_schema');
 
@@ -201,7 +201,7 @@ test('generate sends the grander prompt and numeric score schema to Anthropic', 
   const service = new LlmService(client, 'test-model', { info() {} });
   const result = await service.generate(
     'Evaluation input',
-    GRANDER_SYSTEM_PROMPT,
+    granderSystemPrompt,
     EvaluationSchema,
   );
 

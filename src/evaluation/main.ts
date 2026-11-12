@@ -1,17 +1,12 @@
+import { webSearchSchema } from 'src/web-search/web-search-tools.schema';
+import { barbershopSystemPrompt } from 'src/prompts/barbershop-prompts';
 import Anthropic from '@anthropic-ai/sdk';
 import { resolve } from 'node:path';
 import { loadConfig } from 'src/config';
 import { PromptEvaluator } from 'src/evaluation/PromptEvaluator';
-import {
-  ANTHROPIC_MAX_RETRIES,
-  ANTHROPIC_TIMEOUT_MS,
-  SYSTEM_PROMPT,
-} from 'src/llm/constants';
+import { ANTHROPIC_MAX_RETRIES, ANTHROPIC_TIMEOUT_MS } from 'src/llm/constants';
 import { LlmService } from 'src/llm/llm.service';
-import {
-  addDurationToDatetimeTool,
-  getCurrentTimeTool,
-} from 'src/time/anthropic.time.schema';
+import { createTimeTools } from 'src/time/time-tools';
 import { TimeService } from 'src/time/time.service';
 
 async function main() {
@@ -33,14 +28,14 @@ async function main() {
   const evaluator = new PromptEvaluator({
     datasetPath,
     outputPath,
-    assistantSystemPrompt: SYSTEM_PROMPT,
+    assistantSystemPrompt: barbershopSystemPrompt,
     createServices: () => ({
       assistant: new LlmService(
         client,
         config.anthropicModel,
         logger,
-        timeService,
-        [getCurrentTimeTool, addDurationToDatetimeTool],
+        createTimeTools(timeService),
+        [webSearchSchema],
       ),
       grander: new LlmService(client, config.anthropicGranderModel, logger),
     }),

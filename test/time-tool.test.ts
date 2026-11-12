@@ -1,15 +1,19 @@
+import { webSearchSchema } from 'src/web-search/web-search-tools.schema';
 import assert from 'node:assert/strict';
 import { mock, test } from 'node:test';
 import Anthropic from '@anthropic-ai/sdk';
 import { MessageStream } from '@anthropic-ai/sdk/lib/MessageStream';
 import { LlmService } from 'src/llm/llm.service';
 import { MAX_TOOL_ROUNDS } from 'src/llm/constants';
-import {
-  addDurationToDatetimeTool,
-  getCurrentTimeTool,
-} from 'src/time/anthropic.time.schema';
+
+import { createTimeTools } from 'src/time/time-tools';
+import type { ToolDefinition } from 'src/llm/tool-definition';
 import { TimeService } from 'src/time/time.service';
 import { parsedResponse } from './fixtures/anthropic';
+
+const [getCurrentTimeTool, addDurationToDatetimeTool] = createTimeTools(
+  new TimeService(),
+).map((tool) => tool.schema);
 
 const timestamp = '2026-11-01T12:00:00.000Z';
 
@@ -35,6 +39,8 @@ function toolResponse(
 function setup(
   responses: Array<Awaited<ReturnType<MessageStream['finalMessage']>> | Error>,
   enableTool = true,
+  tools?: ToolDefinition[],
+  serverTools: (typeof webSearchSchema)[] = [],
 ) {
   const client = new Anthropic({ apiKey: 'test-key' });
   const timeService = new TimeService();
@@ -68,8 +74,8 @@ function setup(
     client,
     'test-model',
     { info() {} },
-    enableTool ? timeService : undefined,
-    enableTool ? [getCurrentTimeTool, addDurationToDatetimeTool] : undefined,
+    tools ?? (enableTool ? createTimeTools(timeService) : []),
+    serverTools,
   );
 
   return { service, calls, clock };
@@ -162,7 +168,7 @@ for (const [name, input] of [
           content:
             name === 'unknownTool'
               ? 'Unknown or unavailable tool.'
-              : 'getCurrentTime expects an empty object with no arguments.',
+              : 'Invalid arguments for getCurrentTime.',
           is_error: true,
         },
       ],
@@ -237,11 +243,11 @@ test('adds elapsed minutes across dates and normalizes timezone offsets', () => 
   );
 });
 
-test('executes add_duration_to_datetime and returns its result to the model', async () => {
+test('executes addDurationToDatetime and returns its result to the model', async () => {
   const { service, calls } = setup([
-    toolResponse('add_duration_to_datetime', {
+    toolResponse('addDurationToDatetime', {
       datetime: '2026-11-06T10:00:00+03:00',
-      duration_minutes: 90,
+      durationMinutes: 90,
     }),
     parsedResponse,
   ]);
@@ -262,14 +268,14 @@ test('executes add_duration_to_datetime and returns its result to the model', as
 
 for (const input of [
   { datetime: timestamp },
-  { datetime: timestamp, duration_minutes: '30' },
-  { datetime: timestamp, duration_minutes: 30, extra: true },
-  { datetime: 'invalid', duration_minutes: 30 },
-  { datetime: timestamp, duration_minutes: Number.MAX_VALUE },
+  { datetime: timestamp, durationMinutes: '30' },
+  { datetime: timestamp, durationMinutes: 30, extra: true },
+  { datetime: 'invalid', durationMinutes: 30 },
+  { datetime: timestamp, durationMinutes: Number.MAX_VALUE },
 ]) {
   test(`returns a tool error for invalid duration input ${JSON.stringify(input)}`, async () => {
     const { service, calls } = setup([
-      toolResponse('add_duration_to_datetime', input),
+      toolResponse('addDurationToDatetime', input),
       parsedResponse,
     ]);
 
@@ -287,3 +293,175 @@ for (const input of [
     }
   });
 }
+
+test('dispatches an unrelated async tool and preserves structured content and call IDs', async () => {
+  const content = [{ type: 'text' as const, text: '{"available":false}' }];
+  const inputs: unknown[] = [];
+  const tool: ToolDefinition = {
+    schema: {
+      name: 'checkAvailability',
+      description: 'Check availability for a date.',
+      input_schema: { type: 'object' },
+    },
+    async execute(input) {
+      await Promise.resolve();
+      inputs.push(input);
+
+      return content;
+    },
+  };
+  const response = toolResponse('checkAvailability', { date: '2027-01-15' });
+  const secondCall = {
+    type: 'tool_use' as const,
+    id: 'second_call',
+    name: 'checkAvailability',
+    input: { date: '2027-01-16' },
+    caller: { type: 'direct' as const },
+  };
+  response.content.push(secondCall);
+  const { service, calls, clock } = setup([response, parsedResponse], false, [
+    tool,
+  ]);
+
+  await service.generate('Check two dates');
+
+  assert.deepEqual(calls[0].tools, [tool.schema]);
+  assert.deepEqual(inputs, [{ date: '2027-01-15' }, { date: '2027-01-16' }]);
+  assert.equal(clock.mock.callCount(), 0);
+  assert.deepEqual(calls[1].messages.at(-1)?.content, [
+    { type: 'tool_result', tool_use_id: 'tool_time_1', content },
+    { type: 'tool_result', tool_use_id: 'second_call', content },
+  ]);
+});
+
+for (const asynchronous of [false, true]) {
+  test(`converts ${asynchronous ? 'async' : 'sync'} handler failures to tool errors`, async () => {
+    const fail = () => {
+      throw new Error('Lookup failed');
+    };
+    const tool: ToolDefinition = {
+      schema: { name: 'lookup', input_schema: { type: 'object' } },
+      execute: asynchronous ? async () => fail() : fail,
+    };
+    const { service, calls } = setup(
+      [toolResponse('lookup'), parsedResponse],
+      false,
+      [tool],
+    );
+
+    await service.generate('Look up a record');
+
+    assert.deepEqual(calls[1].messages.at(-1)?.content, [
+      {
+        type: 'tool_result',
+        tool_use_id: 'tool_time_1',
+        content: 'Lookup failed',
+        is_error: true,
+      },
+    ]);
+  });
+}
+
+test('rejects duplicate tool registrations', () => {
+  const tool: ToolDefinition = {
+    schema: { name: 'lookup', input_schema: { type: 'object' } },
+    execute: () => 'Found',
+  };
+
+  assert.throws(
+    () => setup([], false, [tool, tool]),
+    /Duplicate tool name: lookup/,
+  );
+});
+
+test('does not execute a time tool that is not registered', async () => {
+  const { service, calls, clock } = setup(
+    [toolResponse(), parsedResponse],
+    false,
+  );
+
+  await service.generate('Time?');
+
+  assert.equal(clock.mock.callCount(), 0);
+  assert.deepEqual(calls[1].messages.at(-1)?.content, [
+    {
+      type: 'tool_result',
+      tool_use_id: 'tool_time_1',
+      content: 'Unknown or unavailable tool.',
+      is_error: true,
+    },
+  ]);
+});
+
+test('resumes server search turns, preserves citations, and never dispatches search locally', async () => {
+  const paused: Awaited<ReturnType<MessageStream['finalMessage']>> = {
+    ...parsedResponse,
+    stop_reason: 'pause_turn',
+    content: [
+      {
+        type: 'server_tool_use',
+        id: 'search_1',
+        name: 'web_search',
+        input: { query: 'history of barbershops' },
+        caller: { type: 'direct' },
+      },
+    ],
+  };
+  const answer: Awaited<ReturnType<MessageStream['finalMessage']>> = {
+    ...parsedResponse,
+    content: [
+      {
+        type: 'text',
+        text: 'Barbershops have a long history.',
+        parsed_output: null,
+        citations: [
+          {
+            type: 'web_search_result_location',
+            url: 'https://en.wikipedia.org/wiki/Barber',
+            title: 'Barber',
+            cited_text: 'History of barbers',
+            encrypted_index: 'test',
+          },
+        ],
+      },
+    ],
+  };
+  const { service, calls, clock } = setup(
+    [paused, answer, parsedResponse],
+    false,
+    [],
+    [webSearchSchema],
+  );
+
+  const result = await service.generate('Tell me about barbershops');
+
+  assert.deepEqual(calls[0].tools, [webSearchSchema]);
+  assert.equal(calls[0].output_config, undefined);
+  assert.deepEqual(calls[1].messages.at(-1), {
+    role: 'assistant',
+    content: paused.content,
+  });
+  assert.match(result.response, /https:\/\/en.wikipedia.org\/wiki\/Barber/);
+  assert.equal(clock.mock.callCount(), 0);
+  await service.generate('Follow up');
+  assert.deepEqual(calls[2].messages[2], {
+    role: 'assistant',
+    content: answer.content,
+  });
+});
+
+test('bounds repeated server pause turns', async () => {
+  const paused = { ...parsedResponse, stop_reason: 'pause_turn' as const };
+  const { service, calls } = setup(
+    Array.from({ length: MAX_TOOL_ROUNDS + 1 }, () => paused),
+    false,
+    [],
+    [webSearchSchema],
+  );
+
+  await assert.rejects(
+    service.generate('Search'),
+    /Maximum tool call rounds exceeded/,
+  );
+  assert.equal(calls.length, MAX_TOOL_ROUNDS + 1);
+});

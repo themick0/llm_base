@@ -1,12 +1,11 @@
 import { readFile, rename, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import {
-  AnswerSchema,
   DatasetSchema,
   EvaluationSchema,
   type EvaluationResult,
 } from 'src/evaluation/evaluation.schema';
-import { GRANDER_SYSTEM_PROMPT } from 'src/evaluation/grander-prompt';
+import { granderSystemPrompt } from 'src/prompts/grander-prompt';
 import type { LlmService } from 'src/llm/llm.service';
 
 export interface PromptEvaluatorOptions {
@@ -62,9 +61,7 @@ export class PromptEvaluator {
       task,
       this.options.assistantSystemPrompt,
     );
-    const { agentText: response } = AnswerSchema.parse(
-      JSON.parse(generated.response),
-    );
+    const response = generated.response;
     const granderInput = JSON.stringify({
       assistantSystemPrompt: this.options.assistantSystemPrompt,
       task,
@@ -73,7 +70,7 @@ export class PromptEvaluator {
 
     const graded = await grander.generate(
       granderInput,
-      GRANDER_SYSTEM_PROMPT,
+      granderSystemPrompt,
       EvaluationSchema,
     );
     const evaluation = EvaluationSchema.parse(JSON.parse(graded.response));

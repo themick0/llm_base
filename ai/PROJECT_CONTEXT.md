@@ -26,14 +26,37 @@ These topics describe learning interests, not a requirement to implement them al
 - pnpm for dependencies and scripts; ESLint and Prettier for code quality.
 - Configuration from `.env`, with process environment variables taking precedence.
 - Anthropic SDK with one explicitly created client per application instance.
+- `GET /` serves a dependency-free test chat UI from `src/ui/chat-page.ts`.
+  It uses the configured API prefix; its visible history is local to the page.
 - `GET /api/health` and `POST /api/llm/generate`; the prefix is configurable.
 - Streaming text logged to the console, followed by a complete HTTP response.
 - Conversation history is stored in memory per service instance.
 - Full assistant content blocks are preserved in history after a successful turn.
   `requestMessage()` returns the SDK message; `textFromMessage()` extracts text for the API response.
-- The assistant can call the strict `getCurrentTime` and `add_duration_to_datetime` tools, executed by `TimeService`.
+- The assistant can call the strict `getCurrentTime` and `addDurationToDatetime` tools, executed by `TimeService`.
   Duration arithmetic accepts an ISO 8601 datetime with a timezone and a duration in minutes.
+  Tool arguments use camelCase (`datetime`, `durationMinutes`).
   Tool results contain UTC timestamps; the Grander has no time tool.
+- The chat registers `setReminder` with `message` and `remindAt` arguments.
+  `ReminderService` schedules in-memory timers and emits `Reminder due` server logs;
+  shutdown cancels timers and restart loses reminders. There is no browser or
+  external notification delivery.
+- `barbershopSystemPrompt` is the single assistant prompt used by chat and evaluation.
+  It covers bookings, time tools, reminders, and general questions via Wikipedia.
+  The separate Grander prompt evaluates answers against this expanded scope.
+- `LlmService` accepts tool definitions (`schema` and `execute`) without depending
+  on concrete tool services. Handlers validate their own inputs and may be sync
+  or async. Calls execute sequentially; handler failures become tool errors.
+  Domain modules use `*-tools.schema.ts`, `*-tools.ts`, and `*.service.ts`.
+  `createTool` derives Anthropic schemas from strict Zod inputs and validates
+  arguments before dispatching to typed handlers. `createTimeTools` and
+  `createReminderTools` return arrays using this shared helper.
+- Chat and evaluation register Anthropic web search restricted to `wikipedia.org`
+  and its subdomains. Server tool schemas are passed separately from local handlers.
+  `pause_turn` responses resume within the tool-round limit. Web citation URLs are
+  included in returned text; full citation blocks remain in conversation history.
+- Assistant responses are plain text to support search citations; the Grander
+  retains an explicit structured output schema. Evaluation does not register reminders.
 - `LlmService` uses the Anthropic SDK client type directly; tests mock its streaming method.
 - Model requests are processed sequentially.
 - `PromptEvaluator` encapsulates dataset loading, generation, Grander evaluation,
