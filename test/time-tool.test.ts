@@ -40,7 +40,6 @@ function setup(
   responses: Array<Awaited<ReturnType<MessageStream['finalMessage']>> | Error>,
   enableTool = true,
   tools?: ToolDefinition[],
-  serverTools: (typeof webSearchSchema)[] = [],
 ) {
   const client = new Anthropic({ apiKey: 'test-key' });
   const timeService = new TimeService();
@@ -75,7 +74,6 @@ function setup(
     'test-model',
     { info() {} },
     tools ?? (enableTool ? createTimeTools(timeService) : []),
-    serverTools,
   );
 
   return { service, calls, clock };
@@ -298,6 +296,7 @@ test('dispatches an unrelated async tool and preserves structured content and ca
   const content = [{ type: 'text' as const, text: '{"available":false}' }];
   const inputs: unknown[] = [];
   const tool: ToolDefinition = {
+    execution: 'local',
     schema: {
       name: 'checkAvailability',
       description: 'Check availability for a date.',
@@ -340,6 +339,7 @@ for (const asynchronous of [false, true]) {
       throw new Error('Lookup failed');
     };
     const tool: ToolDefinition = {
+      execution: 'local',
       schema: { name: 'lookup', input_schema: { type: 'object' } },
       execute: asynchronous ? async () => fail() : fail,
     };
@@ -364,6 +364,7 @@ for (const asynchronous of [false, true]) {
 
 test('rejects duplicate tool registrations', () => {
   const tool: ToolDefinition = {
+    execution: 'local',
     schema: { name: 'lookup', input_schema: { type: 'object' } },
     execute: () => 'Found',
   };
@@ -429,8 +430,7 @@ test('resumes server search turns, preserves citations, and never dispatches sea
   const { service, calls, clock } = setup(
     [paused, answer, parsedResponse],
     false,
-    [],
-    [webSearchSchema],
+    [{ execution: 'server', schema: webSearchSchema }],
   );
 
   const result = await service.generate('Tell me about barbershops');
@@ -455,8 +455,7 @@ test('bounds repeated server pause turns', async () => {
   const { service, calls } = setup(
     Array.from({ length: MAX_TOOL_ROUNDS + 1 }, () => paused),
     false,
-    [],
-    [webSearchSchema],
+    [{ execution: 'server', schema: webSearchSchema }],
   );
 
   await assert.rejects(
@@ -464,4 +463,55 @@ test('bounds repeated server pause turns', async () => {
     /Maximum tool call rounds exceeded/,
   );
   assert.equal(calls.length, MAX_TOOL_ROUNDS + 1);
+});
+
+test('advertises mixed tools together and only executes local handlers', async () => {
+  let executions = 0;
+  const localTool: ToolDefinition = {
+    execution: 'local',
+    schema: { name: 'lookup', input_schema: { type: 'object' } },
+    execute: () => {
+      executions += 1;
+      return 'Found';
+    },
+  };
+  const { service, calls } = setup(
+    [
+      toolResponse('lookup'),
+      parsedResponse,
+      toolResponse('web_search'),
+      parsedResponse,
+    ],
+    false,
+    [localTool, { execution: 'server', schema: webSearchSchema }],
+  );
+
+  await service.generate('Look up a record');
+  await service.generate('Search');
+
+  assert.deepEqual(calls[0].tools, [localTool.schema, webSearchSchema]);
+  assert.equal(executions, 1);
+  assert.deepEqual(calls[3].messages.at(-1)?.content, [
+    {
+      type: 'tool_result',
+      tool_use_id: 'tool_time_1',
+      content: 'Unknown or unavailable tool.',
+      is_error: true,
+    },
+  ]);
+});
+
+test('rejects name collisions between local and server tools', () => {
+  assert.throws(
+    () =>
+      setup([], false, [
+        {
+          execution: 'local',
+          schema: { name: 'web_search', input_schema: { type: 'object' } },
+          execute: () => 'Unexpected',
+        },
+        { execution: 'server', schema: webSearchSchema },
+      ]),
+    /Duplicate tool name: web_search/,
+  );
 });

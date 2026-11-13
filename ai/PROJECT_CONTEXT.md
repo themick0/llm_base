@@ -44,15 +44,17 @@ These topics describe learning interests, not a requirement to implement them al
 - `barbershopSystemPrompt` is the single assistant prompt used by chat and evaluation.
   It covers bookings, time tools, reminders, and general questions via Wikipedia.
   The separate Grander prompt evaluates answers against this expanded scope.
-- `LlmService` accepts tool definitions (`schema` and `execute`) without depending
-  on concrete tool services. Handlers validate their own inputs and may be sync
+- `LlmService` accepts one array of tool definitions, discriminated by
+  `execution: 'local' | 'server'`, without depending on concrete tool services.
+  Local definitions include `schema` and `execute`; server definitions only include
+  `schema` and are executed by Anthropic. Handlers validate their own inputs and may be sync
   or async. Calls execute sequentially; handler failures become tool errors.
   Domain modules use `*-tools.schema.ts`, `*-tools.ts`, and `*.service.ts`.
   `createTool` derives Anthropic schemas from strict Zod inputs and validates
   arguments before dispatching to typed handlers. `createTimeTools` and
   `createReminderTools` return arrays using this shared helper.
 - Chat and evaluation register Anthropic web search restricted to `wikipedia.org`
-  and its subdomains. Server tool schemas are passed separately from local handlers.
+  and its subdomains. Server and local tools share the same registration array.
   `pause_turn` responses resume within the tool-round limit. Web citation URLs are
   included in returned text; full citation blocks remain in conversation history.
 - Assistant responses are plain text to support search citations; the Grander

@@ -30,13 +30,10 @@ async function main() {
     outputPath,
     assistantSystemPrompt: barbershopSystemPrompt,
     createServices: () => ({
-      assistant: new LlmService(
-        client,
-        config.anthropicModel,
-        logger,
-        createTimeTools(timeService),
-        [webSearchSchema],
-      ),
+      assistant: new LlmService(client, config.anthropicModel, logger, [
+        ...createTimeTools(timeService),
+        { execution: 'server', schema: webSearchSchema },
+      ]),
       grander: new LlmService(client, config.anthropicGranderModel, logger),
     }),
     onProgress: (completed, total) =>

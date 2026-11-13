@@ -3,7 +3,6 @@ import type Anthropic from '@anthropic-ai/sdk';
 import type {
   Message,
   MessageParam,
-  ToolUnion,
   ToolUseBlock,
   ToolResultBlockParam,
 } from '@anthropic-ai/sdk/resources/messages';
@@ -23,16 +22,10 @@ export class LlmService {
     private readonly model: string,
     private readonly logger: Pick<FastifyBaseLogger, 'info'>,
     private readonly tools: readonly ToolDefinition[] = [],
-    private readonly serverTools: readonly (ToolUnion & {
-      name: string;
-    })[] = [],
   ) {
     const names = new Set<string>();
 
-    for (const schema of [
-      ...tools.map((tool) => tool.schema),
-      ...serverTools,
-    ]) {
+    for (const { schema } of tools) {
       if (names.has(schema.name)) {
         throw new Error(`Duplicate tool name: ${schema.name}`);
       }
@@ -118,10 +111,7 @@ export class LlmService {
     systemPrompt: string,
     responseSchema: z.ZodType | undefined,
   ): Promise<Message> {
-    const tools = [
-      ...this.tools.map((tool) => tool.schema),
-      ...this.serverTools,
-    ];
+    const tools = this.tools.map((tool) => tool.schema);
 
     const stream = this.client.messages.stream({
       model: this.model,
@@ -150,7 +140,7 @@ export class LlmService {
       tool_use_id: toolCall.id,
     };
 
-    if (!tool) {
+    if (!tool || tool.execution !== 'local') {
       return {
         ...result,
         content: 'Unknown or unavailable tool.',

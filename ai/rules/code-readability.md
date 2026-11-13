@@ -66,3 +66,9 @@ configuration from the domain's `*-tools.schema.ts`, checked with the specific
 SDK tool type. Preserve required provider names and fields. Do not recreate its
 input schema in Zod or use `createTool` for server-executed tools, which have no
 local handler.
+
+Register all tools in one `ToolDefinition[]`. Use `execution: 'local'` with a
+schema and handler for client-executed tools, or `execution: 'server'` with only
+the provider schema for tools executed by Anthropic. `createTool` returns a
+`LocalToolDefinition`. Do not introduce separate server-tool arrays or dummy
+handlers; the dispatcher must only execute local definitions.

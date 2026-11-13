@@ -31,13 +31,11 @@ export function createApp(config: Config = loadConfig(), client?: Anthropic) {
   });
 
   app.addHook('onClose', async () => reminderService.close());
-  const llm = new LlmService(
-    anthropic,
-    config.anthropicModel,
-    app.log,
-    [...createTimeTools(timeService), ...createReminderTools(reminderService)],
-    [webSearchSchema],
-  );
+  const llm = new LlmService(anthropic, config.anthropicModel, app.log, [
+    ...createTimeTools(timeService),
+    ...createReminderTools(reminderService),
+    { execution: 'server', schema: webSearchSchema },
+  ]);
   const prefix = `/${config.apiPrefix}`;
 
   app.get('/', async (_request, reply) => {

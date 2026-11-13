@@ -123,8 +123,10 @@ an explicit timezone) and `durationMinutes` (a finite number). The result is UTC
 negative durations subtract elapsed time.
 
 `createTimeTools(timeService)` registers both tools. `LlmService` accepts a list
-of `ToolDefinition` objects as its fourth constructor argument. Each definition
-pairs an Anthropic `schema` with an `execute(input: unknown)` handler. Handlers
+of `ToolDefinition` objects as its fourth constructor argument. Each definition has an `execution` discriminator. Local tools
+(`execution: 'local'`) pair an Anthropic `schema` with an
+`execute(input: unknown)` handler. Server tools (`execution: 'server'`) carry
+only the provider `schema`; Anthropic executes them. Both use the same array. Handlers
 validate their own arguments and return text or Anthropic tool-result content
 blocks, either directly or through a promise. Serialize JSON results to text.
 To add a tool, pass another definition; no changes to `LlmService` are needed.
@@ -148,7 +150,8 @@ It does not redirect general knowledge questions to booking.
 
 ### Wikipedia search
 
-Chat and evaluation pass `webSearchSchema` as a server tool to `LlmService`.
+Chat and evaluation register `{ execution: 'server', schema: webSearchSchema }`
+in the same `tools` array as local tools.
 Anthropic executes `web_search`; there is no local execute handler. Search is
 restricted to `wikipedia.org`, including language subdomains. Paused server turns
 are resumed within the same round limit as local tools. Source URLs from citations

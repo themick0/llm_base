@@ -1,11 +1,11 @@
 import { createTool } from 'src/llm/create-tool';
-import type { ToolDefinition } from 'src/llm/tool-definition';
+import type { LocalToolDefinition } from 'src/llm/tool-definition';
 import { setReminderSchema } from 'src/reminders/reminder-tools.schema';
 import type { ReminderService } from 'src/reminders/reminder.service';
 
 export function createReminderTools(
   service: ReminderService,
-): ToolDefinition[] {
+): LocalToolDefinition[] {
   return [
     createTool(setReminderSchema, (input) => {
       const reminder = service.setReminder(input);
